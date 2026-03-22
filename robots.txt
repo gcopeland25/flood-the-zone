@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Keep admin panel out of search results if ever added
+Disallow: /admin-panel.html
+
+# Sitemap
+Sitemap: https://floodthezone.live/sitemap.xml
