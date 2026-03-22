@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<main>
+  <div class="story-page" id="story-content">
+    <!-- Loading state -->
+    <div style="height:24px;width:80px;border-radius:4px;margin-bottom:2rem;" class="skeleton"></div>
+    <div style="height:16px;width:200px;border-radius:4px;margin-bottom:1rem;" class="skeleton"></div>
+    <div style="height:48px;width:100%;border-radius:4px;margin-bottom:0.5rem;" class="skeleton"></div>
+    <div style="height:48px;width:70%;border-radius:4px;margin-bottom:2rem;" class="skeleton"></div>
+    <div style="height:100px;width:100%;border-radius:4px;margin-bottom:2rem;" class="skeleton"></div>
+    <div style="height:160px;width:100%;border-radius:8px;" class="skeleton"></div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+<script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+
+async function loadStory() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+
+  const data = await loadStories();
+  if (!data) {
+    document.getElementById('story-content').innerHTML = `
+      <a href="/index.html" class="story-page-back">← Back to home</a>
+      <p style="color:var(--text2)">Could not load story. Please try again.</p>`;
+    return;
+  }
+
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+
+  // Search all story arrays
+  const allStories = [
+    ...(data.major_stories || []),
+    ...(data.fading_stories || []),
+    ...(data.outcomes || [])
+  ];
+  const story = allStories.find(s => s.id === id);
+
+  if (!story) {
+    document.getElementById('story-content').innerHTML = `
+      <a href="/index.html" class="story-page-back">← Back to home</a>
+      <p style="color:var(--text2)">Story not found.</p>`;
+    return;
+  }
+
+  // Update page title
+  document.title = `${story.title} — Flood the Zone`;
+
+  const impactColor = story.status === 'hot' ? 'var(--red)' : story.status === 'fading' ? 'var(--amber)' : 'var(--blue)';
+
+  document.getElementById('story-content').innerHTML = `
+    <a href="javascript:history.back()" class="story-page-back">← Back</a>
+
+    <div class="story-page-eyebrow">
+      <span class="status-pill ${pillClass(story.status)}">${statusEmoji(story.status)} ${story.status_label || story.status}</span>
+      <span style="font-family:var(--mono);font-size:0.65rem;color:var(--text3);letter-spacing:0.08em;">${story.category || ''}</span>
+      ${story.updated ? `<span style="font-family:var(--mono);font-size:0.65rem;color:var(--text3);">Updated ${story.updated}</span>` : ''}
+    </div>
+
+    <h1 class="story-page-title">${story.title}</h1>
+    <p class="story-page-summary">${story.summary}</p>
+
+    ${story.impact ? `
+    <div class="story-meta-grid">
+      <div class="story-meta-cell">
+        <div class="story-meta-label">Impact Score</div>
+        <div class="story-meta-value blue">${story.impact}<span style="font-size:1rem;color:var(--text3)">/100</span></div>
+        <div class="impact-bar"><div class="impact-fill" id="impact-bar" style="width:0%;background:${impactColor}"></div></div>
+      </div>
+      <div class="story-meta-cell">
+        <div class="story-meta-label">Articles Tracked</div>
+        <div class="story-meta-value">${Number(story.articles_tracked || 0).toLocaleString()}</div>
+      </div>
+      <div class="story-meta-cell">
+        <div class="story-meta-label">Months Active</div>
+        <div class="story-meta-value">${story.months_active || '—'}</div>
+      </div>
+      <div class="story-meta-cell">
+        <div class="story-meta-label">Category</div>
+        <div class="story-meta-value" style="font-size:1rem;font-family:var(--sans);font-weight:500;">${story.category || '—'}</div>
+      </div>
+    </div>` : ''}
+
+    ${story.analysis ? `
+    <div class="story-section-title">AI Analysis</div>
+    <div class="story-analysis-box">
+      <p class="story-analysis-text">${story.analysis}</p>
+    </div>` : ''}
+
+    ${story.timeline && story.timeline.length ? `
+    <div class="story-section-title">Update Timeline</div>
+    <div class="timeline-list">
+      ${story.timeline.map(t => `
+        <div class="tl-item ${t.latest ? 'latest' : ''}">
+          <div class="tl-date">${t.date}</div>
+          <div class="tl-event">${t.event}</div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    ${story.result ? `
+    <div class="story-section-title">Verified Outcome</div>
+    <div style="background:var(--green-bg);border:1px solid rgba(63,185,80,0.15);border-radius:10px;padding:1.25rem;margin-bottom:2rem;">
+      <p style="font-size:0.88rem;color:var(--green);line-height:1.7;">${story.result}</p>
+    </div>` : ''}
+
+    <div style="border-top:1px solid var(--border);padding-top:2rem;margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+      <a href="/active.html" style="font-family:var(--mono);font-size:0.72rem;color:var(--blue);text-decoration:none;">← All active stories</a>
+      <a href="/index.html" style="font-family:var(--mono);font-size:0.72rem;color:var(--text2);text-decoration:none;">← Home</a>
+    </div>
+  `;
+
+  // Animate impact bar
+  setTimeout(() => {
+    const bar = document.getElementById('impact-bar');
+    if (bar && story.impact) bar.style.width = story.impact + '%';
+  }, 200);
+
+  initFadeUp();
+}
+
+loadStory();
+</script>
+</body>
+</html>

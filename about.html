@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.about-hero { padding: 5rem 0 4rem; border-bottom: 1px solid var(--border); }
+.about-hero-inner { max-width: 780px; }
+.about-hero h1 { font-family: var(--serif); font-size: clamp(2.5rem, 6vw, 4rem); color: var(--text); line-height: 1.05; margin-bottom: 1.5rem; }
+.about-hero h1 em { color: var(--blue); font-style: italic; }
+.about-lead { font-size: 1.15rem; color: var(--text2); line-height: 1.8; font-weight: 300; }
+.about-body { padding: 4rem 0; }
+.about-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 5rem; }
+.prose p { font-size: 0.95rem; color: var(--text2); line-height: 1.9; font-weight: 300; margin-bottom: 1.5rem; }
+.prose h2 { font-family: var(--serif); font-size: 1.6rem; color: var(--text); margin-bottom: 1rem; margin-top: 2.5rem; }
+.sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+.sidebar-card-title { font-family: var(--mono); font-size: 0.65rem; color: var(--blue); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .label { color: var(--text2); font-weight: 300; }
+.stat-row .value { font-family: var(--mono); font-size: 0.75rem; color: var(--text); }
+.feature-list { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1.5rem; }
+.feature { display: flex; gap: 1rem; }
+.feature-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--blue-bg); border: 1px solid rgba(88,166,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.feature-title { font-weight: 500; font-size: 0.88rem; color: var(--text); margin-bottom: 3px; }
+.feature-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; }
+@media(max-width:1024px) { .about-grid { grid-template-columns: 1fr; gap: 3rem; } }
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<main>
+  <div class="container">
+    <div class="about-hero fade-up">
+      <div class="about-hero-inner">
+        <div class="section-label">About Flood the Zone</div>
+        <h1>Accountability after the <em>headlines</em> fade</h1>
+        <p class="about-lead">We track every major political story — not just today's, but every story from the past year — and report back on what actually happened.</p>
+      </div>
+    </div>
+
+    <div class="about-body">
+      <div class="about-grid">
+        <div class="prose fade-up">
+          <h2>The Problem</h2>
+          <p>"Flooding the zone" is a deliberate media strategy: release so many stories, so fast, that no single narrative can be held accountable. The public gets overwhelmed. Stories fade before they resolve. Nothing sticks. Politicians make announcements knowing that by the time anyone follows up, five other stories have taken over the news cycle.</p>
+          <p>The result is a media environment where a President can announce an executive order, a Congress member can promise an investigation, or a regulator can vow new rules — and face no accountability when nothing happens. Because no one is watching. Because it's impossible to watch everything.</p>
+
+          <h2>What We Do</h2>
+          <p>Flood the Zone uses AI to do what no human newsroom can: track every major political story simultaneously, across hundreds of sources, over months and years — and report back on what actually happened.</p>
+          <p>Our AI ingests 800+ political news sources every day. It clusters stories by issue thread, tracks legislative and legal developments, monitors whether executive orders get implemented, and flags when political announcements quietly disappear without follow-up.</p>
+          <p>When a story produces a real outcome — a lawsuit filed, a regulation published, legislation passed — we verify it and publish it. When it doesn't, we track that too. Every story that fades from the news cycle without resolution stays in our tracker indefinitely.</p>
+
+          <h2>What We Are Not</h2>
+          <p>We are not a news outlet. We don't break stories or employ reporters. We are the accountability layer on top of the news — the system that tracks what everyone else reported and asks, six months later: what actually happened?</p>
+          <p>We are not partisan. We track stories from across the political spectrum. Our AI scores stories for genuine policy impact, not political alignment. A story that generates media noise without legislative outcome scores the same whether it comes from the left or right.</p>
+
+          <h2>Our Methodology</h2>
+          <p>Every story in our tracker has been analyzed by our AI for: the cumulative pattern of coverage, the gap between political rhetoric and operational reality, the probability of a real outcome, and the media velocity versus evidence base ratio.</p>
+          <p>Outcome classifications (lawsuit, legislation, regulation, investigation) are verified against primary sources before publication. We link to original documents wherever possible.</p>
+        </div>
+
+        <div class="fade-up">
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">By the Numbers</div>
+            <div class="stat-row"><span class="label">Sources monitored</span><span class="value" id="stat-sources">847</span></div>
+            <div class="stat-row"><span class="label">Stories tracked</span><span class="value" id="stat-stories">235</span></div>
+            <div class="stat-row"><span class="label">Stories fizzled</span><span class="value" id="stat-fizzled">178</span></div>
+            <div class="stat-row"><span class="label">Update frequency</span><span class="value">Every 6 hours</span></div>
+            <div class="stat-row"><span class="label">AI model</span><span class="value">Claude (Anthropic)</span></div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">How It Works</div>
+            <div class="feature-list">
+              <div class="feature">
+                <div class="feature-icon">◎</div>
+                <div><div class="feature-title">Continuous monitoring</div><div class="feature-desc">AI scans 800+ sources every 6 hours, clustering stories by issue thread.</div></div>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">↗</div>
+                <div><div class="feature-title">Signal scoring</div><div class="feature-desc">Each story is scored for genuine long-term impact vs. short-term noise.</div></div>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">✓</div>
+                <div><div class="feature-title">Outcome verification</div><div class="feature-desc">Real outcomes are verified against primary sources before publishing.</div></div>
+              </div>
+              <div class="feature">
+                <div class="feature-icon">◈</div>
+                <div><div class="feature-title">Narrative mapping</div><div class="feature-desc">Claims tracked across outlets — velocity vs. evidence base monitored.</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Contact</div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.6;font-weight:300;margin-bottom:1rem;">For press inquiries, story tips, or corrections:</p>
+            <a href="/cdn-cgi/l/email-protection#254d4049494a6543494a4a41514d405f4a4b400b464a48" style="font-family:var(--mono);font-size:0.72rem;color:var(--blue);text-decoration:none;"><span class="__cf_email__" data-cfemail="2f474a4343406f494340404b5b474a5540414a014c4042">[email&#160;protected]</span></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<div id="footer-placeholder"></div>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+
+async function init() {
+  const data = await loadStories();
+  if (!data) return;
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+  if (data.meta) {
+    document.getElementById('stat-sources').textContent = data.meta.sources_monitored.toLocaleString();
+    documen

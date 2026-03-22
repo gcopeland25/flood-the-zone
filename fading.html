@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fading Stories — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.fading-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2rem; }
+.fading-card { background: var(--surface); padding: 1.5rem; display: flex; gap: 1.25rem; align-items: flex-start; transition: background 0.2s; cursor: pointer; }
+.fading-card:hover { background: var(--surface2); }
+.fade-meter { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fade-ring { width: 52px; height: 52px; }
+.fade-ring svg { transform: rotate(-90deg); }
+.fade-label { font-family: var(--mono); font-size: 0.58rem; color: var(--text3); text-align: center; line-height: 1.3; }
+.fading-title { font-family: var(--serif); font-size: 1rem; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+.fading-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; margin-bottom: 8px; }
+.fading-announced { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); }
+.fading-announced span { color: var(--amber); }
+@media(max-width:768px) { .fading-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<main>
+  <div class="container">
+    <div class="page-header fade-up">
+      <div class="section-label">Fading Stories</div>
+      <h1 class="page-title">Announcements fading before resolution</h1>
+      <p class="page-desc">These political announcements generated significant coverage then disappeared. Our AI continues tracking them even when the press has moved on.</p>
+    </div>
+    <div id="fading-container" class="fading-grid fade-up">
+      <div class="skeleton" style="height:130px"></div>
+      <div class="skeleton" style="height:130px"></div>
+      <div class="skeleton" style="height:130px"></div>
+      <div class="skeleton" style="height:130px"></div>
+    </div>
+  </div>
+</main>
+<div id="footer-placeholder"></div>
+<script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+
+async function init() {
+  const data = await loadStories();
+  if (!data) return;
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+
+  const items = data.fading_stories || [];
+  document.getElementById('fading-container').className = 'fading-grid fade-up visible';
+
+  if (items.length === 0) {
+    document.getElementById('fading-container').innerHTML = `<div style="padding:3rem;text-align:center;grid-column:1/-1;font-family:var(--mono);font-size:0.75rem;color:var(--text3);">No fading stories tracked yet. Make.com will populate these automatically.</div>`;
+    return;
+  }
+
+  document.getElementById('fading-container').innerHTML = items.map(item => {
+    const circ = 2 * Math.PI * 20;
+    const offset = circ - (item.coverage_remaining / 100) * circ;
+    return `
+    <div class="fading-card">
+      <div class="fade-meter">
+        <div class="fade-ring">
+          <svg viewBox="0 0 44 44" width="52" height="52">
+            <circle cx="22" cy="22" r="20" fill="none" stroke="#1c2230" stroke-width="4"/>
+            <circle cx="22" cy="22" r="20" fill="none" stroke="#d29922" stroke-width="4"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="fade-label">${item.coverage_remaining}%<br>coverage</div>
+      </div>
+      <div>
+        <div class="fading-title">${item.title}</div>
+        <div class="fading-desc">${item.description}</div>
+        <div class="fading-announced">Announced <span>${item.announced}</span> · Last coverage <span>${item.last_coverage}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+  initFadeUp();
+}
+init();
+</script>
+</body>
+</html>

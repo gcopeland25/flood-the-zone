@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flood the Zone — AI Political Story Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117; --surface: #161b22; --surface2: #1c2230;
+  --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+  --blue: #58a6ff; --blue-dim: #1f6feb; --blue-bg: rgba(88,166,255,0.06); --blue-bg2: rgba(88,166,255,0.12);
+  --text: #e6edf3; --text2: #8b949e; --text3: #6e7681;
+  --red: #f85149; --red-bg: rgba(248,81,73,0.08);
+  --amber: #d29922; --amber-bg: rgba(210,153,34,0.08);
+  --green: #3fb950; --green-bg: rgba(63,185,80,0.08);
+  --purple: #bc8cff; --purple-bg: rgba(188,140,255,0.08);
+  --serif: 'DM Serif Display', serif; --sans: 'DM Sans', sans-serif; --mono: 'DM Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 15px; line-height: 1.6; overflow-x: hidden; }
+
+nav { position: sticky; top: 0; z-index: 100; background: rgba(13,17,23,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 1280px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.nav-logo { font-family: var(--serif); font-size: 1.3rem; color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+.nav-logo-dot { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; animation: livepulse 2s infinite; }
+@keyframes livepulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(88,166,255,0.4)} 50%{opacity:0.7;box-shadow:0 0 0 6px rgba(88,166,255,0)} }
+.nav-links { display: flex; gap: 0; }
+.nav-links a { color: var(--text2); text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.02em; padding: 0 1rem; height: 60px; display: flex; align-items: center; border-bottom: 2px solid transparent; transition: all 0.2s; }
+.nav-links a:hover { color: var(--text); border-bottom-color: var(--blue); }
+.nav-cta { background: var(--blue-dim); color: #fff; border: none; padding: 7px 16px; font-family: var(--sans); font-size: 0.78rem; font-weight: 500; cursor: pointer; border-radius: 6px; transition: background 0.2s; }
+.nav-cta:hover { background: var(--blue); }
+
+.ticker-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 0; overflow: hidden; white-space: nowrap; }
+.ticker-inner { display: inline-flex; animation: tick 50s linear infinite; }
+.ticker-item { font-family: var(--mono); font-size: 0.68rem; color: var(--text2); padding: 0 2.5rem; display: inline-flex; align-items: center; gap: 10px; }
+.ticker-item::before { content: ''; width: 6px; height: 6px; background: var(--blue); border-radius: 50%; flex-shrink: 0; opacity: 0.6; }
+@keyframes tick { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+.hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(88,166,255,0.08) 0%, transparent 70%); pointer-events: none; }
+.hero-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 60px 60px; pointer-events: none; mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 100%); }
+.hero-inner { max-width: 1280px; margin: 0 auto; padding: 6rem 2rem 5rem; position: relative; }
+.hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--blue-bg); border: 1px solid rgba(88,166,255,0.2); border-radius: 100px; padding: 5px 14px; font-family: var(--mono); font-size: 0.7rem; color: var(--blue); letter-spacing: 0.08em; margin-bottom: 2rem; }
+.hero-eyebrow span { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; display: inline-block; }
+h1.hero-title { font-family: var(--serif); font-size: clamp(3rem, 7vw, 5.5rem); line-height: 1; color: var(--text); margin-bottom: 1.5rem; }
+h1.hero-title em { color: var(--blue); font-style: italic; }
+.hero-sub { font-size: 1.1rem; color: var(--text2); max-width: 580px; line-height: 1.7; margin-bottom: 3rem; font-weight: 300; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-primary { background: var(--blue-dim); color: #fff; border: none; padding: 12px 28px; font-family: var(--sans); font-size: 0.88rem; font-weight: 500; cursor: pointer; border-radius: 8px; transition: background 0.2s; }
+.btn-primary:hover { background: var(--blue); }
+.btn-ghost { background: none; color: var(--text2); border: 1px solid var(--border2); padding: 12px 28px; font-family: var(--sans); font-size: 0.88rem; font-weight: 500; cursor: pointer; border-radius: 8px; transition: all 0.2s; }
+.btn-ghost:hover { color: var(--text); border-color: var(--blue); }
+
+section { padding: 5rem 0; border-bottom: 1px solid var(--border); }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+.section-label { font-family: var(--mono); font-size: 0.68rem; color: var(--blue); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+h2.section-title { font-family: var(--serif); font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: var(--text); margin-bottom: 0.75rem; }
+.section-desc { color: var(--text2); font-size: 0.95rem; max-width: 560px; font-weight: 300; margin-bottom: 3rem; line-height: 1.7; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 3rem; }
+.stat-card { background: var(--surface); padding: 2rem 1.5rem; transition: background 0.2s; }
+.stat-card:hover { background: var(--surface2); }
+.stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 16px; }
+.stat-num { font-family: var(--serif); font-size: 2.8rem; line-height: 1; color: var(--text); margin-bottom: 4px; }
+.stat-label { font-size: 0.8rem; color: var(--text2); font-weight: 400; margin-bottom: 8px; }
+.stat-delta { font-family: var(--mono); font-size: 0.7rem; }
+.delta-up { color: var(--red); } .delta-stable { color: var(--amber); } .delta-down { color: var(--green); }
+
+.stories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.story-card { background: var(--surface); padding: 1.75rem; display: flex; flex-direction: column; gap: 1rem; transition: background 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+.story-card:hover { background: var(--surface2); }
+.story-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.story-card.hot::before { background: var(--red); }
+.story-card.developing::before { background: var(--blue); }
+.story-card.fading::before { background: var(--amber); }
+.story-card.resolved::before { background: var(--green); }
+.story-meta { display: flex; align-items: center; justify-content: space-between; }
+.status-pill { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.1em; padding: 3px 10px; border-radius: 100px; font-weight: 500; }
+.pill-hot { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,81,73,0.2); }
+.pill-developing { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(88,166,255,0.2); }
+.pill-fading { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(210,153,34,0.2); }
+.pill-resolved { background: var(--green-bg); color: var(--green); border: 1px solid rgba(63,185,80,0.2); }
+.story-date { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); }
+.story-title { font-family: var(--serif); font-size: 1.08rem; color: var(--text); line-height: 1.35; }
+.story-summary { font-size: 0.8rem; color: var(--text2); line-height: 1.6; font-weight: 300; }
+.story-timeline { display: flex; flex-direction: column; gap: 0; margin-top: auto; }
+.tl-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-left: 1px solid var(--border); padding-left: 14px; position: relative; font-size: 0.75rem; color: var(--text3); }
+.tl-item::before { content: ''; position: absolute; left: -4px; top: 12px; width: 7px; height: 7px; border-radius: 50%; background: var(--border2); }
+.tl-item.latest::before { background: var(--blue); }
+.tl-item.latest { color: var(--text2); }
+.tl-date { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); white-space: nowrap; min-width: 72px; }
+.story-analysis { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; font-size: 0.75rem; color: var(--text2); line-height: 1.6; }
+.story-analysis::before { content: 'AI ANALYSIS  '; font-family: var(--mono); font-size: 0.6rem; color: var(--blue); letter-spacing: 0.12em; display: block; margin-bottom: 4px; }
+
+.fading-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.fading-card { background: var(--surface); padding: 1.5rem; display: flex; gap: 1.25rem; align-items: flex-start; transition: background 0.2s; }
+.fading-card:hover { background: var(--surface2); }
+.fade-meter { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fade-ring { width: 44px; height: 44px; position: relative; }
+.fade-ring svg { transform: rotate(-90deg); }
+.fade-label { font-family: var(--mono); font-size: 0.58rem; color: var(--text3); text-align: center; }
+.fading-title { font-family: var(--serif); font-size: 1rem; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+.fading-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; margin-bottom: 8px; }
+.fading-announced { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); }
+.fading-announced span { color: var(--amber); }
+
+.outcomes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.outcome-card { background: var(--surface); padding: 1.75rem; transition: background 0.2s; }
+.outcome-card:hover { background: var(--surface2); }
+.outcome-type { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+.ot-lawsuit { color: var(--blue); } .ot-legislation { color: var(--green); } .ot-regulation { color: var(--purple); }
+.outcome-title { font-family: var(--serif); font-size: 1.05rem; color: var(--text); margin-bottom: 0.5rem; line-height: 1.35; }
+.outcome-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; margin-bottom: 1rem; }
+.outcome-result { border-radius: 6px; padding: 10px 12px; font-size: 0.75rem; line-height: 1.5; }
+.outcome-result strong { display: block; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; margin-bottom: 3px; opacity: 0.7; }
+.result-lawsuit { background: var(--blue-bg); border: 1px solid rgba(88,166,255,0.15); color: var(--blue); }
+.result-legislation { background: var(--green-bg); border: 1px solid rgba(63,185,80,0.15); color: var(--green); }
+.result-regulation { background: var(--purple-bg); border: 1px solid rgba(188,140,255,0.15); color: var(--purple); }
+
+.narratives-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.narrative-item { background: var(--surface); padding: 1.5rem; display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; transition: background 0.2s; }
+.narrative-item:hover { background: var(--surface2); }
+.narrative-label { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 6px; }
+.narrative-title { font-family: var(--serif); font-size: 1.05rem; color: var(--text); margin-bottom: 6px; }
+.narrative-desc { font-size: 0.78rem; color: var(--text2); font-weight: 300; line-height: 1.6; }
+.narrative-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 160px; }
+.spread-bar { width: 160px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.spread-fill { height: 100%; border-radius: 3px; background: var(--purple); }
+.spread-label { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); }
+.spread-outlets { color: var(--purple); }
+.velocity-badge { font-family: var(--mono); font-size: 0.6rem; padding: 3px 8px; border-radius: 100px; }
+.vel-high { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,81,73,0.2); }
+.vel-stable { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(210,153,34,0.2); }
+.vel-rising { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,81,73,0.2); }
+.vel-declining { background: var(--green-bg); color: var(--green); border: 1px solid rgba(63,185,80,0.15); }
+
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.about-feature { display: flex; gap: 1rem; }
+.about-feature-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--blue-bg); border: 1px solid rgba(88,166,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+.about-feature-title { font-weight: 500; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+.about-feature-desc { font-size: 0.8rem; color: var(--text2); line-height: 1.6; font-weight: 300; }
+.about-right { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.signup-section { background: var(--surface); }
+.signup-inner { max-width: 900px; margin: 0 auto; padding: 5rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+.signup-left h2 { font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 2.5rem); color: var(--text); margin-bottom: 1rem; }
+.signup-left p { font-size: 0.88rem; color: var(--text2); line-height: 1.7; font-weight: 300; }
+.signup-right { display: flex; flex-direction: column; gap: 1rem; }
+.topic-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.5rem; }
+.topic-pill { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.08em; padding: 4px 10px; border: 1px solid var(--border2); background: none; color: var(--text2); cursor: pointer; border-radius: 100px; transition: all 0.15s; }
+.topic-pill.on { background: var(--blue-bg2); border-color: rgba(88,166,255,0.4); color: var(--blue); }
+.email-row { display: flex; }
+.email-input { flex: 1; background: var(--bg); border: 1px solid var(--border2); border-right: none; padding: 10px 14px; font-family: var(--sans); font-size: 0.85rem; color: var(--text); outline: none; border-radius: 8px 0 0 8px; transition: border-color 0.2s; }
+.email-input:focus { border-color: var(--blue); }
+.email-input::placeholder { color: var(--text3); }
+.btn-signup { background: var(--blue-dim); border: none; padding: 10px 20px; font-family: var(--sans); font-size: 0.82rem; font-weight: 500; color: #fff; cursor: pointer; border-radius: 0 8px 8px 0; transition: background 0.2s; white-space: nowrap; }
+.btn-signup:hover { background: var(--blue); }
+.signup-note { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); }
+
+footer { background: var(--bg); border-top: 1px solid var(--border); padding: 3rem 0 2rem; }
+.footer-inner { max-width: 1280px; margin: 0 auto; padding: 0 2rem; }
+.footer-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 3rem; margin-bottom: 3rem; }
+.footer-brand { max-width: 280px; }
+.footer-logo { font-family: var(--serif); font-size: 1.3rem; color: var(--text); margin-bottom: 0.75rem; }
+.footer-tagline { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; }
+.footer-links { display: flex; gap: 4rem; }
+.footer-col-title { font-family: var(--mono); font-size: 0.65rem; color: var(--text2); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; }
+.footer-col a { display: block; font-size: 0.82rem; color: var(--text3); text-decoration: none; margin-bottom: 0.5rem; transition: color 0.2s; }
+.footer-col a:hover { color: var(--blue); }
+.footer-bottom { border-top: 1px solid var(--border); padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+.footer-copy { font-family: var(--mono); font-size: 0.65rem; color: var(--text3); }
+.footer-status { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 0.65rem; color: var(--green); }
+.footer-status span { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse2 2s infinite; }
+@keyframes pulse2 { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* LOADING STATE */
+.loading-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.skeleton { background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.skeleton-card { height: 280px; }
+
+.fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+/* ERROR BANNER */
+.error-banner { background: var(--red-bg); border: 1px solid rgba(248,81,73,0.2); border-radius: 8px; padding: 1rem 1.5rem; font-family: var(--mono); font-size: 0.75rem; color: var(--red); margin-bottom: 2rem; display: none; }
+
+@media(max-width:1024px) {
+  .stats-grid { grid-template-columns: repeat(2,1fr); }
+  .stories-grid,.loading-grid { grid-template-columns: 1fr 1fr; }
+  .outcomes-grid { grid-template-columns: 1fr 1fr; }
+  .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+  .signup-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+}
+@media(max-width:768px) {
+  .nav-links { display: none; }
+  .stories-grid,.loading-grid,.fading-grid,.outcomes-grid { grid-template-columns: 1fr; }
+  .footer-top { flex-direction: column; }
+  .footer-links { flex-direction: column; gap: 2rem; }
+  h1.hero-title { font-size: 2.8rem; }
+  .narrative-item { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo"><div class="nav-logo-dot"></div>Flood the Zone</a>
+    <div class="nav-links">
+      <a href="#active">Active Events</a>
+      <a href="#fading">Fading Stories</a>
+      <a href="#outcomes">Policy Outcomes</a>
+      <a href="#narratives">Narratives</a>
+      <a href="#about">About</a>
+    </div>
+    <button class="nav-cta" onclick="document.getElementById('signup-email').focus()">Get Weekly Digest</button>
+  </div>
+</nav>
+
+<div class="ticker-wrap"><div class="ticker-inner" id="ticker-inner"></div></div>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span></span>AI-powered political accountability</div>
+    <h1 class="hero-title">Flood the <em>Zone</em></h1>
+    <p class="hero-sub">AI tracking the flood of political information so people can see what actually happened. Every headline. Every outcome. Every story that quietly disappeared.</p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.querySelector('#active').scrollIntoView({behavior:'smooth'})">Explore Active Stories</button>
+      <button class="btn-ghost" onclick="document.querySelector('#about').scrollIntoView({behavior:'smooth'})">How It Works</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="container">
+    <div class="section-label">Today's Information Flood</div>
+    <h2 class="section-title fade-up">The daily volume no one can process</h2>
+    <p class="section-desc fade-up">Our AI ingests every major political story and categorizes each by trajectory, impact, and outcome probability.</p>
+    <div class="stats-grid fade-up" id="stats-grid">
+      <div class="stat-card"><div class="stat-icon" style="background:var(--red-bg);color:var(--red)">⚡</div><div class="stat-num" id="s1">—</div><div class="stat-label">Breaking stories today</div><div class="stat-delta delta-up">↑ 23% vs yesterday</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--blue-bg);color:var(--blue)">◎</div><div class="stat-num" id="s2">—</div><div class="stat-label">Developing political events</div><div class="stat-delta delta-stable">→ 3 new updates</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--amber-bg);color:var(--amber)">↘</div><div class="stat-num" id="s3">—</div><div class="stat-label">Stories losing momentum</div><div class="stat-delta delta-down">↓ Fading from coverage</div></div>
+      <div class="stat-card"><div class="stat-icon" style="background:var(--green-bg);color:var(--green)">✓</div><div class="stat-num" id="s4">—</div><div class="stat-label">Stories with real policy impact</div><div class="stat-delta delta-down">↑ 2 new outcomes confirmed</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- MAJOR STORIES -->
+<section id="active">
+  <div class="container">
+    <div class="section-label">Major Stories Developing</div>
+    <h2 class="section-title fade-up">Issues growing beneath the noise</h2>
+    <p class="section-desc fade-up">These stories span months or years of coverage. Each card represents hundreds of articles, reduced to what actually matters.</p>
+    <div class="error-banner" id="stories-error">Could not load stories. Showing cached data. Make.com may need attention.</div>
+    <div id="stories-container" class="loading-grid fade-up">
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+      <div class="skeleton skeleton-card"></div>
+    </div>
+  </div>
+</section>
+
+<!-- FADING -->
+<section id="fading">
+  <div class="container">
+    <div class="section-label">Stories Quietly Disappearing</div>
+    <h2 class="section-title fade-up">Announcements that faded before resolution</h2>
+    <p class="section-desc fade-up">These political announcements generated significant coverage then disappeared. Our AI continues tracking them even when the press has moved on.</p>
+    <div id="fading-container" class="fading-grid fade-up">
+      <div class="skeleton" style="height:120px"></div>
+      <div class="skeleton" style="height:120px"></div>
+      <div class="skeleton" style="height:120px"></div>
+      <div class="skeleton" style="height:120px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTCOMES -->
+<section id="outcomes">
+  <div class="container">
+    <div class="section-label">What Actually Happened</div>
+    <h2 class="section-title fade-up">Stories that produced real outcomes</h2>
+    <p class="section-desc fade-up">These are the exceptions — headlines that turned into lawsuits, regulations, or legislation. We verify every claimed outcome.</p>
+    <div id="outcomes-container" class="outcomes-grid fade-up">
+      <div class="skeleton" style="height:220px"></div>
+      <div class="skeleton" style="height:220px"></div>
+      <div class="skeleton" style="height:220px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- NARRATIVES -->
+<section id="narratives">
+  <div class="container">
+    <div class="section-label">Narrative Tracker</div>
+    <h2 class="section-title fade-up">Political narratives spreading across media</h2>
+    <p class="section-desc fade-up">Our AI maps how specific framings and claims travel across outlets. Velocity shows how fast a narrative is spreading relative to its evidence base.</p>
+    <div id="narratives-container" class="narratives-list fade-up">
+      <div class="skeleton" style="height:80px"></div>
+      <div class="skeleton" style="height:80px"></div>
+      <div class="skeleton" style="height:80px"></div>
+      <div class="skeleton" style="height:80px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="fade-up">
+        <div class="section-label">About Flood the Zone</div>
+        <h2 class="section-title" style="margin-bottom:1.25rem;">Accountability after the headlines fade</h2>
+        <p style="color:var(--text2);font-size:0.92rem;line-height:1.8;font-weight:300;margin-bottom:1.5rem;">"Flooding the zone" is a deliberate media strategy: release so many stories, so fast, that no single narrative can be held accountable. The public gets overwhelmed. Stories fade before they resolve. Nothing sticks.</p>
+        <p style="color:var(--text2);font-size:0.92rem;line-height:1.8;font-weight:300;margin-bottom:1.5rem;">Flood the Zone uses AI to do what no human newsroom can: track every major political story simultaneously, across hundreds of sources, over months and years — and report back on what actually happened.</p>
+        <p style="color:var(--text2);font-size:0.92rem;line-height:1.8;font-weight:300;">We are not a news outlet. We are the accountability layer on top of the news.</p>
+      </div>
+      <div class="about-right fade-up">
+        <div class="about-feature"><div class="about-feature-icon">◎</div><div><div class="about-feature-title">Continuous AI Monitoring</div><div class="about-feature-desc">Our AI ingests 800+ political news sources daily, clustering stories by issue thread and tracking developments across time — not just today's cycle.</div></div></div>
+        <div class="about-feature"><div class="about-feature-icon">↗</div><div><div class="about-feature-title">Signal vs. Noise Scoring</div><div class="about-feature-desc">Every story is scored for genuine long-term impact versus short-term media noise. Of hundreds of stories published today, AI identifies those with structural significance.</div></div></div>
+        <div class="about-feature"><div class="about-feature-icon">✓</div><div><div class="about-feature-title">Verified Outcome Tracking</div><div class="about-feature-desc">When a story produces a real outcome — a lawsuit, regulation, legislation — we verify and publish it. When it doesn't, we track that too.</div></div></div>
+        <div class="about-feature"><div class="about-feature-icon">◈</div><div><div class="about-feature-title">Narrative Intelligence</div><div class="about-feature-desc">We map how political claims travel across media ecosystems, flagging when narrative spread outpaces the underlying evidence base.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP -->
+<div class="signup-section" id="signup">
+  <div class="signup-inner">
+    <div class="signup-left">
+      <div class="section-label" style="margin-bottom:1.5rem;">Weekly Intelligence Digest</div>
+      <h2>Stay informed.<br>Not overwhelmed.</h2>
+      <p style="margin-top:1rem;">One email per week. AI-curated briefing on the stories that matter, the ones that faded, and what actually changed. No noise.</p>
+    </div>
+    <div class="signup-right">
+      <div style="font-family:var(--mono);font-size:0.62rem;color:var(--text2);letter-spacing:0.1em;margin-bottom:8px;">SELECT YOUR TOPICS</div>
+      <div class="topic-pills">
+        <button class="topic-pill on" onclick="this.classList.toggle('on')">Democracy</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Economy</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Climate</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Courts</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Immigration</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Healthcare</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Civil Rights</button>
+        <button class="topic-pill" onclick="this.classList.toggle('on')">Foreign Policy</button>
+      </div>
+      <div class="email-row">
+        <input type="email" class="email-input" id="signup-email" placeholder="your@email.com" />
+        <button class="btn-signup" onclick="handleSignup()">Subscribe →</button>
+      </div>
+      <div class="signup-note" id="signup-note">Weekly digest · No spam · Unsubscribe anytime</div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">Flood the Zone</div>
+        <div class="footer-tagline">AI-powered political story tracking. Every headline. Every outcome. Every story that quietly disappeared.</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <div class="footer-col-title">Navigate</div>
+          <a href="#active">Active Events</a><a href="#fading">Fading Stories</a>
+          <a href="#outcomes">Policy Outcomes</a><a href="#narratives">Narratives</a><a href="#about">About</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Platform</div>
+          <a href="#">Methodology</a><a href="#">Data Sources</a><a href="#">AI Transparency</a>
+        </div>
+        <div class="footer-col">
+          <div class="footer-col-title">Company</div>
+          <a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2026 Flood the Zone. All rights reserved.</div>
+      <div class="footer-status" id="footer-status"><span></span>AI monitoring active · <span id="footer-sources">—</span> sources · <span id="footer-updated">Loading...</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── RENDER HELPERS ──────────────────────────────────────────────────────────
+function pillClass(status) {
+  return { hot:'pill-hot', developing:'pill-developing', fading:'pill-fading', resolved:'pill-resolved' }[status] || 'pill-developing';
+}
+function statusEmoji(status) {
+  return { hot:'🔴', developing:'◎', fading:'↘', resolved:'✓' }[status] || '◎';
+}
+function countUp(el, target) {
+  let c = 0; const step = Math.ceil(target / 50);
+  const t = setInterval(() => { c = Math.min(c + step, target); el.textContent = c.toLocaleString(); if (c >= target) clearInterval(t); }, 25);
+}
+function fadeRingOffset(pct) {
+  const circumference = 2 * Math.PI * 17;
+  return circumference - (pct / 100) * circumference;
+}
+
+// ── RENDER FUNCTIONS ─────────────────────────────────────────────────────────
+function renderTicker(items) {
+  const doubled = [...items, ...items];
+  document.getElementById('ticker-inner').innerHTML =
+    doubled.map(t => `<span class="ticker-item">${t}</span>`).join('');
+}
+
+function renderStats(stats) {
+  const ids = ['s1','s2','s3','s4'];
+  const vals = [stats.breaking_today, stats.developing, stats.losing_momentum, stats.real_policy_impact];
+  ids.forEach((id, i) => countUp(document.getElementById(id), vals[i]));
+}
+
+function renderStories(stories) {
+  document.getElementById('stories-container').className = 'stories-grid fade-up visible';
+  document.getElementById('stories-container').innerHTML = stories.map(s => `
+    <div class="story-card ${s.status}">
+      <div class="story-meta">
+        <span class="status-pill ${pillClass(s.status)}">${statusEmoji(s.status)} ${s.status_label}</span>
+        <span class="story-date">Updated ${s.updated}</span>
+      </div>
+      <div class="story-title">${s.title}</div>
+      <div class="story-summary">${s.summary}</div>
+      <div class="story-timeline">
+        ${s.timeline.map(t => `
+          <div class="tl-item ${t.latest ? 'latest' : ''}">
+            <span class="tl-date">${t.date}</span>
+            <span>${t.event}</span>
+          </div>`).join('')}
+      </div>
+      <div class="story-analysis">${s.analysis}</div>
+    </div>
+  `).join('');
+}
+
+function renderFading(items) {
+  document.getElementById('fading-container').className = 'fading-grid fade-up visible';
+  document.getElementById('fading-container').innerHTML = items.map(item => {
+    const circ = 2 * Math.PI * 17;
+    const offset = circ - (item.coverage_remaining / 100) * circ;
+    return `
+    <div class="fading-card">
+      <div class="fade-meter">
+        <div class="fade-ring">
+          <svg viewBox="0 0 44 44" width="44" height="44">
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#1c2230" stroke-width="5"/>
+            <circle cx="22" cy="22" r="17" fill="none" stroke="#d29922" stroke-width="5"
+              stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="fade-label">${item.coverage_remaining}%<br>coverage</div>
+      </div>
+      <div>
+        <div class="fading-title">${item.title}</div>
+        <div class="fading-desc">${item.description}</div>
+        <div class="fading-announced">Announced <span>${item.announced}</span> · Last coverage <span>${item.last_coverage}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderOutcomes(items) {
+  document.getElementById('outcomes-container').className = 'outcomes-grid fade-up visible';
+  document.getElementById('outcomes-container').innerHTML = items.map(item => `
+    <div class="outcome-card">
+      <div class="outcome-type ot-${item.type}">${item.type_label}</div>
+      <div class="outcome-title">${item.title}</div>
+      <div class="outcome-desc">${item.description}</div>
+      <div class="outcome-result result-${item.type}">
+        <strong>Verified Outcome</strong>${item.result}
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderNarratives(items) {
+  document.getElementById('narratives-container').className = 'narratives-list fade-up visible';
+  document.getElementById('narratives-container').innerHTML = items.map(item => `
+    <div class="narrative-item">
+      <div>
+        <div class="narrative-label">${item.status} Narrative · ${item.category}</div>
+        <div class="narrative-title">${item.title}</div>
+        <div class="narrative-desc">${item.description}</div>
+      </div>
+      <div class="narrative-right">
+        <div class="spread-bar"><div class="spread-fill" style="width:${item.outlet_spread}%"></div></div>
+        <div class="spread-label">Outlet spread: <span class="spread-outlets">${item.outlet_spread}% of tracked media</span></div>
+        <span class="velocity-badge vel-${item.velocity}">${
+          item.velocity==='high'?'↑ ':item.velocity==='rising'?'↑ ':item.velocity==='declining'?'↓ ':'→ '
+        }${item.velocity_label}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFooter(meta) {
+  document.getElementById('footer-sources').textContent = meta.sources_monitored.toLocaleString();
+  const updated = new Date(meta.last_updated);
+  const mins = Math.round((Date.now() - updated.getTime()) / 60000);
+  document.getElementById('footer-updated').textContent =
+    mins < 60 ? `Updated ${mins}m ago` : `Updated ${Math.round(mins/60)}h ago`;
+}
+
+// ── MAIN DATA LOAD ───────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('./stories.json?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    renderTicker(data.ticker);
+    renderStats(data.stats);
+    renderStories(data.major_stories);
+    renderFading(data.fading_stories);
+    renderOutcomes(data.outcomes);
+    renderNarratives(data.narratives);
+    renderFooter(data.meta);
+
+  } catch (err) {
+    console.warn('stories.json load failed:', err.message);
+    document.getElementById('stories-error').style.display = 'block';
+    // Fallback: render static placeholder so page is never broken
+    renderTicker(['AI monitoring active — connect Make.com to enable live updates']);
+  }
+}
+
+// ── INTERSECTION OBSERVER ────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── EMAIL SIGNUP ─────────────────────────────────────────────────────────────
+function handleSignup() {
+  const input = document.getElementById('signup-email');
+  const note = document.getElementById('signup-note');
+  const email = input.value.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    note.textContent = '⚠ Please enter a valid email address.';
+    note.style.color = 'var(--red)'; return;
+  }
+  note.textContent = '✓ Subscribed. Check your inbox for confirmation.';
+  note.style.color = 'var(--green)';
+  input.value = '';
+  setTimeout(() => { note.textContent = 'Weekly digest · No spam · Unsubscribe anytime'; note.style.color = ''; }, 6000);
+}
+document.getElementById('signup-email').addEventListener('keydown', e => { if (e.key === 'Enter') handleSignup(); });
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

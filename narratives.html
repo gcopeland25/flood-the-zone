@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Narrative Tracker — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.narratives-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2rem; }
+.narrative-item { background: var(--surface); padding: 1.5rem; display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center; transition: background 0.2s; cursor: pointer; }
+.narrative-item:hover { background: var(--surface2); }
+.narrative-label { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); letter-spacing: 0.1em; margin-bottom: 6px; }
+.narrative-title { font-family: var(--serif); font-size: 1.05rem; color: var(--text); margin-bottom: 6px; }
+.narrative-desc { font-size: 0.78rem; color: var(--text2); font-weight: 300; line-height: 1.6; }
+.narrative-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 160px; }
+.spread-bar { width: 160px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.spread-fill { height: 100%; border-radius: 3px; background: var(--purple); }
+.spread-label { font-family: var(--mono); font-size: 0.62rem; color: var(--text3); }
+.spread-outlets { color: var(--purple); }
+.velocity-badge { font-family: var(--mono); font-size: 0.6rem; padding: 3px 8px; border-radius: 100px; }
+.vel-high,.vel-rising { background: var(--red-bg); color: var(--red); border: 1px solid rgba(248,81,73,0.2); }
+.vel-stable { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(210,153,34,0.2); }
+.vel-declining { background: var(--green-bg); color: var(--green); border: 1px solid rgba(63,185,80,0.15); }
+@media(max-width:768px) { .narrative-item { grid-template-columns: 1fr; } .narrative-right { align-items: flex-start; } }
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<main>
+  <div class="container">
+    <div class="page-header fade-up">
+      <div class="section-label">Narrative Tracker</div>
+      <h1 class="page-title">Political narratives spreading across media</h1>
+      <p class="page-desc">Our AI maps how specific framings and claims travel across outlets. Velocity shows how fast a narrative is spreading relative to its evidence base.</p>
+    </div>
+    <div id="narratives-container" class="narratives-list fade-up">
+      <div class="skeleton" style="height:90px"></div>
+      <div class="skeleton" style="height:90px"></div>
+      <div class="skeleton" style="height:90px"></div>
+      <div class="skeleton" style="height:90px"></div>
+    </div>
+  </div>
+</main>
+<div id="footer-placeholder"></div>
+<script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+
+async function init() {
+  const data = await loadStories();
+  if (!data) return;
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+
+  const items = data.narratives || [];
+  document.getElementById('narratives-container').className = 'narratives-list fade-up visible';
+
+  if (items.length === 0) {
+    document.getElementById('narratives-container').innerHTML = `<div style="padding:3rem;text-align:center;font-family:var(--mono);font-size:0.75rem;color:var(--text3);">No narratives tracked yet. These will be populated as Make.com monitors media patterns.</div>`;
+    return;
+  }
+
+  const velLabel = v => ({ high:'↑ High velocity', rising:'↑ Rising fast', stable:'→ Stable', declining:'↓ Declining' }[v] || v);
+
+  document.getElementById('narratives-container').innerHTML = items.map(item => `
+    <div class="narrative-item">
+      <div>
+        <div class="narrative-label">${item.status} Narrative · ${item.category}</div>
+        <div class="narrative-title">${item.title}</div>
+        <div class="narrative-desc">${item.description}</div>
+      </div>
+      <div class="narrative-right">
+        <div class="spread-bar"><div class="spread-fill" style="width:${item.outlet_spread}%"></div></div>
+        <div class="spread-label">Outlet spread: <span class="spread-outlets">${item.outlet_spread}% of tracked media</span></div>
+        <span class="velocity-badge vel-${item.velocity}">${velLabel(item.velocity)}</span>
+      </div>
+    </div>`).join('');
+  initFadeUp();
+}
+init();
+</script>
+</body>
+</html>

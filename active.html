@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Active Events — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<main>
+  <div class="container">
+    <div class="page-header fade-up">
+      <div class="section-label">Active Events</div>
+      <h1 class="page-title">Major stories developing now</h1>
+      <p class="page-desc">These stories span months or years of coverage. Each one represents hundreds of articles reduced to what actually matters.</p>
+    </div>
+    <div id="stories-container" class="cards-grid fade-up">
+      <div class="skeleton" style="height:280px"></div>
+      <div class="skeleton" style="height:280px"></div>
+      <div class="skeleton" style="height:280px"></div>
+    </div>
+  </div>
+</main>
+<div id="footer-placeholder"></div>
+<script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+injectModal();
+
+async function init() {
+  const data = await loadStories();
+  if (!data) return;
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+
+  const stories = data.major_stories || [];
+  document.getElementById('stories-container').className = 'cards-grid fade-up visible';
+  document.getElementById('stories-container').innerHTML = stories.map(s => `
+    <div class="story-card ${s.status}" onclick="handleStoryClick(${JSON.stringify(s).replace(/"/g, '&quot;')})">
+      <div class="card-meta">
+        <span class="status-pill ${pillClass(s.status)}">${statusEmoji(s.status)} ${s.status_label}</span>
+        <span class="card-date">Updated ${s.updated}</span>
+      </div>
+      <div class="card-title">${s.title}</div>
+      <div class="card-summary">${s.summary}</div>
+      <div class="card-footer">
+        <span class="card-category">${s.category} · ${s.articles_tracked} articles</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </div>`).join('');
+  initFadeUp();
+}
+init();
+</script>
+</body>
+</html>

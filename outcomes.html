@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Policy Outcomes — Flood the Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<style>
+.outcomes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-top: 2rem; }
+.outcome-card { background: var(--surface); padding: 1.75rem; transition: background 0.2s; cursor: pointer; }
+.outcome-card:hover { background: var(--surface2); }
+.outcome-type { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 8px; }
+.ot-lawsuit { color: var(--blue); } .ot-legislation { color: var(--green); } .ot-regulation { color: var(--purple); }
+.outcome-title { font-family: var(--serif); font-size: 1.05rem; color: var(--text); margin-bottom: 0.5rem; line-height: 1.35; }
+.outcome-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; font-weight: 300; margin-bottom: 1rem; }
+.outcome-result { border-radius: 6px; padding: 10px 12px; font-size: 0.75rem; line-height: 1.5; }
+.outcome-result strong { display: block; font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; margin-bottom: 3px; opacity: 0.7; }
+.result-lawsuit { background: var(--blue-bg); border: 1px solid rgba(88,166,255,0.15); color: var(--blue); }
+.result-legislation { background: var(--green-bg); border: 1px solid rgba(63,185,80,0.15); color: var(--green); }
+.result-regulation { background: var(--purple-bg); border: 1px solid rgba(188,140,255,0.15); color: var(--purple); }
+@media(max-width:1024px) { .outcomes-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:768px) { .outcomes-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+<main>
+  <div class="container">
+    <div class="page-header fade-up">
+      <div class="section-label">Policy Outcomes</div>
+      <h1 class="page-title">Stories that produced real results</h1>
+      <p class="page-desc">These are the exceptions — headlines that turned into lawsuits, regulations, or legislation. Every outcome listed here is verified.</p>
+    </div>
+    <div id="outcomes-container" class="outcomes-grid fade-up">
+      <div class="skeleton" style="height:220px"></div>
+      <div class="skeleton" style="height:220px"></div>
+      <div class="skeleton" style="height:220px"></div>
+    </div>
+  </div>
+</main>
+<div id="footer-placeholder"></div>
+<script src="/shared.js"></script>
+<script>
+document.getElementById('nav-placeholder').innerHTML = renderNav();
+document.getElementById('footer-placeholder').innerHTML = renderFooter();
+setActiveNav();
+
+async function init() {
+  const data = await loadStories();
+  if (!data) return;
+  renderTicker(data.ticker);
+  updateFooterTime(data.meta.last_updated);
+
+  const items = data.outcomes || [];
+  document.getElementById('outcomes-container').className = 'outcomes-grid fade-up visible';
+
+  if (items.length === 0) {
+    document.getElementById('outcomes-container').innerHTML = `<div style="padding:3rem;text-align:center;grid-column:1/-1;font-family:var(--mono);font-size:0.75rem;color:var(--text3);">No verified outcomes yet. These are added manually when a story produces real legislation, lawsuits, or regulations.</div>`;
+    return;
+  }
+
+  document.getElementById('outcomes-container').innerHTML = items.map(item => `
+    <div class="outcome-card" onclick="window.location.href='/story.html?id=${item.id}'">
+      <div class="outcome-type ot-${item.type}">${item.type_label}</div>
+      <div class="outcome-title">${item.title}</div>
+      <div class="outcome-desc">${item.description}</div>
+      <div class="outcome-result result-${item.type}">
+        <strong>Verified Outcome</strong>${item.result}
+      </div>
+    </div>`).join('');
+  initFadeUp();
+}
+init();
+</script>
+</body>
+</html>
